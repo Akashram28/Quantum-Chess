@@ -124,6 +124,7 @@ class Game {
 
 	getPieceAllowedMoves(event, pieceName){
 		const piece = this.getPieceByName(pieceName);
+		console.log(piece,pieceName)
 		if(this.turn == piece.color){
 			this.clearSquares();
 			this.setClickedPiece(piece);
@@ -173,11 +174,11 @@ class Game {
 	}
 
 	getPieceByName(piecename) {
-		return this.pieces.filter( obj => obj.name === piecename )[0];
+		return this.pieces.filter( obj => obj.name === piecename );
 	}
 
 	getPieceByPos(piecePosition) {
-		return this.pieces.filter(obj =>  obj.position === piecePosition )[0];
+		return this.pieces.filter(obj =>  obj.position === piecePosition );
 	}
 
 	positionHasExistingPiece(position) {
