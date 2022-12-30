@@ -1,3 +1,4 @@
+import Playscreen from '../screens/Playscreen';
 import Piece from '../pieces/Piece'
 class Pawn extends Piece {
 	constructor(position, name) {
@@ -18,7 +19,7 @@ class Pawn extends Piece {
 
 	changePosition(position, promote=false) {
 		this.position = parseInt(position);
-		if (promote && (position > 80 || position < 20)) game.promote(this);
+		if (promote && (position > 80 || position < 20)) Playscreen.promote(this);
 	}
 }
 export default Pawn

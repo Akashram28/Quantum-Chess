@@ -91,13 +91,13 @@ export default class Playscreen extends React.Component{
   }
 
 	onSquareClicked = (item) => {
-		if(this.getPieceByName(item.piece) == this.state.selectedPiece){
+		if(this.getPieceByName(item.piece) == this.state.selectedPiece && item.piece != 'none'){
 			this.setState({selectedPiece : null, selectedSquare : null,targetSquare : null})
 			console.log('Deselected ' + item.piece)
 		}
 		else if(this.state.selectedPiece!=null && this.state.selectedSquare!=null){
-			console.log('Moving ' + this.state.selectedPiece + " to " + item.id)
-			console.log(this.state.selectedSquare,this.state.targetSquare)
+			console.log('Moving ' + this.state.selectedPiece.name + " to " + item.id)
+			// console.log(this.state.selectedSquare)
 			this.setState({targetSquare : item.id},() => {this.movePiece(this.state.targetSquare)})
 			
 		}
@@ -115,27 +115,37 @@ export default class Playscreen extends React.Component{
 		// console.log(this.state.selectedSquare)
 	}
 
-	pieceMove(item){
-		let name = item.piece
-		let allowedMoves = this.getPieceAllowedMoves(name);
-		if (allowedMoves) {
-			let position = this.getPieceByName(name).position;
-			const clickedSquare = item.id;
+	// pieceMove(item){
+	// 	let name = item.piece
+	// 	let allowedMoves = this.getPieceAllowedMoves(name);
+	// 	if (allowedMoves) {
+	// 		let position = this.getPieceByName(name).position;
+	// 		const clickedSquare = item.id;
 
-			// if (this.state.selectedPiece && this.state.selectedPiece.name == name){
-			// 	this.setselectedPiece(null);
-			// 	return this.clearSquares();
-			// }
-			// clickedSquare.classList.add('clicked-square');
-			// allowedMoves.forEach( allowedMove => {
-			// 	if (document.body.contains(document.getElementById(allowedMove))) {
-			// 		document.getElementById(allowedMove).classList.add('allowed');		
-			// 	}	
-			// });
+	// 		// if (this.state.selectedPiece && this.state.selectedPiece.name == name){
+	// 		// 	this.setselectedPiece(null);
+	// 		// 	return this.clearSquares();
+	// 		// }
+	// 		// clickedSquare.classList.add('clicked-square');
+	// 		// allowedMoves.forEach( allowedMove => {
+	// 		// 	if (document.body.contains(document.getElementById(allowedMove))) {
+	// 		// 		document.getElementById(allowedMove).classList.add('allowed');		
+	// 		// 	}	
+	// 		// });
+	// 	}
+	// 	else{
+	// 		this.clearSquares();
+	// 	}
+	// }
+	capturePiece = (pos,color) => {
+		let pieces = this.state.pieces
+		for (let i = 0; i < pieces.length; i++) {
+			if(pieces[i].position == pos && pieces[i].color != color){
+				pieces.splice(i,1)
+
+			}
 		}
-		else{
-			this.clearSquares();
-		}
+		this.setState({pieces:pieces})
 	}
 
 	changeTurn() {
@@ -220,7 +230,7 @@ export default class Playscreen extends React.Component{
 			}
 			let allowedMoves = this.unblockedPositions( pieceAllowedMoves, piece.position, piece.color, true );
 			this.setState({allowedMoves : allowedMoves})
-			console.log(allowedMoves)
+			// console.log(allowedMoves)
 			// return allowedMoves;
 		}
 		else if (this.state.selectedPiece && this.state.turn == this.state.selectedPiece.color && this.state.allowedMoves && this.state.allowedMoves.indexOf(piece.position) != -1) {
@@ -271,17 +281,21 @@ export default class Playscreen extends React.Component{
 		this.setState({selectedPiece : piece})
 	}
 
-	movePiece(target, square='') {
-		square = target;
-		console.log(this.state.allowedMoves,square)
+	movePiece(target) {
+		let square = target;
+		// console.log(this.state.allowedMoves,square)
 		if (this.state.allowedMoves.includes(parseInt(square))) {
 			let selectedPiece = this.state.selectedPiece;
-			if (selectedPiece) {
+			if (selectedPiece){
 				let newPosition = square;
-				if (selectedPiece.hasRank('king') || selectedPiece.hasRank('pawn'))
+				if (selectedPiece.hasRank('king') || selectedPiece.hasRank('pawn')){
 					selectedPiece.changePosition(newPosition, true);
-				else
+					this.capturePiece(newPosition,this.state.turn)
+				}
+				else{
 					selectedPiece.changePosition(newPosition);
+					this.capturePiece(newPosition,this.state.turn)
+				}
 				// square.append(selectedPiece.img)
 				let data = this.state.board
 				data.forEach((element,index) => {
@@ -317,15 +331,17 @@ export default class Playscreen extends React.Component{
 	}
 
 	kill(piece) {
-		piece.img.parentNode.removeChild(piece.img);
-		piece.img.className = '';
+		// piece.img.parentNode.removeChild(piece.img);
+		// piece.img.className = '';
 
-		if (piece.color == 'white') this.whiteSematary.querySelector('.'+piece.rank).append(piece.img);
-		else this.blackSematary.querySelector('.'+piece.rank).append(piece.img);
+		// if (piece.color == 'white') this.whiteSematary.querySelector('.'+piece.rank).append(piece.img);
+		// else this.blackSematary.querySelector('.'+piece.rank).append(piece.img);
 
-		let chosenSquare = document.getElementById(piece.position);
-		this.state.pieces.splice(this.state.pieces.indexOf(piece), 1);
-		this.movePiece('', chosenSquare);
+		
+		let pieces = this.state.pieces.splice(this.state.pieces.indexOf(piece), 1);
+		console.log(pieces.length)
+		this.setState({pieces : pieces},() => {this.movePiece(chosenSquare)})
+		
 	}
 
 	castleRook(rookName) {
@@ -333,10 +349,10 @@ export default class Playscreen extends React.Component{
 		let newPosition = rookName.indexOf('Rook2') != -1 ? rook.position - 2 : rook.position + 3;
 
 		this.setselectedPiece(rook);
-		let chosenSquare = document.getElementById(newPosition);
-		chosenSquare.classList.add('allowed');
+		// let chosenSquare = document.getElementById(newPosition);
+		// chosenSquare.classList.add('allowed');
 
-		this.movePiece('', chosenSquare );
+		this.movePiece(newPosition);
 		this.changeTurn();
 	}
 
@@ -345,7 +361,7 @@ export default class Playscreen extends React.Component{
 		let image = pawn.img;
 		image.id = queenName;
 		image.src = image.src.replace('Pawn', 'Queen');
-		this.state.pieces.splice(this.pieces.indexOf(pawn), 1);
+		this.state.pieces.splice(this.state.pieces.indexOf(pawn), 1);
 		this.state.pieces.push( new Queen(pawn.position, queenName) );
 	}
 
@@ -355,15 +371,15 @@ export default class Playscreen extends React.Component{
 		let otherPiece = this.getPieceByPos(pos);
 		let should_kill_other_piece = kill && otherPiece && otherPiece.rank != 'king';
 		piece.changePosition(pos);
-		if (should_kill_other_piece) this.pieces.splice(this.pieces.indexOf(otherPiece), 1);
+		if (should_kill_other_piece) this.state.pieces.splice(this.state.pieces.indexOf(otherPiece), 1);
 		if (this.king_checked(piece.color)) {
 			piece.changePosition(originalPosition);
-			if (should_kill_other_piece) this.pieces.push(otherPiece);
+			if (should_kill_other_piece) this.state.pieces.push(otherPiece);
 			return 1;
 		}
 		else{
 			piece.changePosition(originalPosition);
-			if (should_kill_other_piece) this.pieces.push(otherPiece);
+			if (should_kill_other_piece) this.state.pieces.push(otherPiece);
 			return 0;
 		}
 	}

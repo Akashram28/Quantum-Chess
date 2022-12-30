@@ -1,3 +1,4 @@
+import Playscreen from '../screens/Playscreen';
 import Piece from '../pieces/Piece'
 class King extends Piece {
 	constructor(position, name) {
@@ -27,8 +28,8 @@ class King extends Piece {
 
 	changePosition(position, castle=false) {
 		if (castle) {
-			if (position - this.position == 2) game.castleRook(this.color+'Rook2');
-			if (position - this.position == -2) game.castleRook(this.color+'Rook1');
+			if (position - this.position == 2) Playscreen.castleRook(this.color+'Rook2');
+			if (position - this.position == -2) Playscreen.castleRook(this.color+'Rook1');
 			this.ableToCastle = false;
 		}
 		this.position = parseInt(position);
